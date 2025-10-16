@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ServicesSection from "@/components/ServicesSection";
-import ProductCard from "@/components/ProductCard";
+import SwipeableProductGallery from "@/components/SwipeableProductGallery";
 import ShoppingCartDrawer from "@/components/ShoppingCartDrawer";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -91,14 +91,11 @@ export default function HomePage() {
               </Button>
             </div>
 
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  {...product}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
+            <div className="mt-8">
+              <SwipeableProductGallery
+                products={featuredProducts}
+                onAddToCart={handleAddToCart}
+              />
             </div>
           </div>
         </section>

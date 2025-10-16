@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import AnimatedBackground from "@/components/AnimatedBackground";
+import CustomCursor from "@/components/CustomCursor";
 import HomePage from "@/pages/HomePage";
 import StorePage from "@/pages/StorePage";
 import CustomPrintPage from "@/pages/CustomPrintPage";
@@ -29,6 +31,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider>
+          <AnimatedBackground />
+          <CustomCursor />
           <Toaster />
           <Router />
         </ThemeProvider>

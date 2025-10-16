@@ -212,6 +212,11 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    cursor: none;
+  }
+
+  a, button, [role="button"] {
+    cursor: none;
   }
 }
 
