@@ -6,7 +6,7 @@ export default function ServicesSection() {
     {
       icon: Box,
       title: "3D Printing",
-      description: "High-quality prints with multiple material options including PLA, ABS, and PETG for any project size.",
+      description: "High-quality PLA prints with excellent finish and durability for any project size.",
     },
     {
       icon: Pencil,

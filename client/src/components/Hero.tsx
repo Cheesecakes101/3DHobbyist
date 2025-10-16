@@ -7,7 +7,7 @@ import heroImage from "@assets/generated_images/3D_printed_objects_hero_image_87
 export default function Hero() {
   const features = [
     { icon: Clock, title: "5-24hr Delivery", description: "Quick turnaround" },
-    { icon: Layers, title: "Multi-Material", description: "PLA, ABS, PETG" },
+    { icon: Layers, title: "PLA Material", description: "High-quality PLA" },
     { icon: Shield, title: "Confidential", description: "Secure files" },
   ];
 

@@ -181,16 +181,13 @@ export default function CustomPrintForm() {
 
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
-          <Label htmlFor="material">Material Preference</Label>
-          <Select>
+          <Label htmlFor="material">Material</Label>
+          <Select defaultValue="pla">
             <SelectTrigger id="material" className="mt-2" data-testid="select-material">
               <SelectValue placeholder="Select material" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="pla">PLA</SelectItem>
-              <SelectItem value="abs">ABS</SelectItem>
-              <SelectItem value="petg">PETG</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
         </div>
