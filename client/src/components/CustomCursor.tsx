@@ -37,27 +37,18 @@ export default function CustomCursor() {
   if (isHidden) return null;
 
   return (
-    <>
-      <div
-        className="pointer-events-none fixed z-50 mix-blend-difference transition-transform duration-150"
-        style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          transform: `translate(-50%, -50%) scale(${isPointer ? 1.5 : 1})`,
-        }}
-      >
-        <div className="h-4 w-4 rounded-full border-2 border-white" />
+    <div
+      className="pointer-events-none fixed z-50 transition-all duration-200 ease-out"
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        transform: `translate(-50%, -50%) scale(${isPointer ? 1.2 : 1})`,
+      }}
+    >
+      <div className="relative">
+        <div className="h-6 w-6 rounded-full bg-primary/20 blur-sm" />
+        <div className="absolute inset-0 h-6 w-6 rounded-full border-2 border-primary" />
       </div>
-      <div
-        className="pointer-events-none fixed z-50 transition-all duration-300 ease-out"
-        style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          transform: `translate(-50%, -50%) scale(${isPointer ? 2 : 1})`,
-        }}
-      >
-        <div className="h-2 w-2 rounded-full bg-white mix-blend-difference" />
-      </div>
-    </>
+    </div>
   );
 }
