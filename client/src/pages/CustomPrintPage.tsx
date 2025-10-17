@@ -5,10 +5,12 @@ import ShoppingCartDrawer from "@/components/ShoppingCartDrawer";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, Settings, Zap } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 import printerImage from "@assets/generated_images/3D_printer_in_action_45da8a35.png";
 
 export default function CustomPrintPage() {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const { getCartItemCount } = useCart();
 
   const steps = [
     {
@@ -30,7 +32,7 @@ export default function CustomPrintPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header cartItemCount={0} onCartClick={() => setIsCartOpen(true)} />
+      <Header cartItemCount={getCartItemCount()} onCartClick={() => setIsCartOpen(true)} />
       
       <main className="flex-1">
         <section className="relative py-16 bg-muted/30">
@@ -94,9 +96,6 @@ export default function CustomPrintPage() {
       <ShoppingCartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
-        items={[]}
-        onUpdateQuantity={() => {}}
-        onRemove={() => {}}
       />
     </div>
   );

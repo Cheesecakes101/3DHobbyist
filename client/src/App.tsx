@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { CartProvider } from "@/contexts/CartContext";
 import VideoBackground from "@/components/VideoBackground";
 import CustomCursor from "@/components/CustomCursor";
 import HomePage from "@/pages/HomePage";
@@ -29,14 +30,16 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <ThemeProvider>
-          <VideoBackground />
-          <CustomCursor />
-          <Toaster />
-          <Router />
-        </ThemeProvider>
-      </TooltipProvider>
+      <CartProvider>
+        <TooltipProvider>
+          <ThemeProvider>
+            <VideoBackground />
+            <CustomCursor />
+            <Toaster />
+            <Router />
+          </ThemeProvider>
+        </TooltipProvider>
+      </CartProvider>
     </QueryClientProvider>
   );
 }

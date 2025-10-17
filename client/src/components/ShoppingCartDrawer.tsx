@@ -9,31 +9,37 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "wouter";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
+import { useCart } from "@/contexts/CartContext";
+import { useQuery } from "@tanstack/react-query";
+import type { Product } from "@shared/schema";
 
 interface ShoppingCartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  items: CartItem[];
-  onUpdateQuantity?: (id: string, quantity: number) => void;
-  onRemove?: (id: string) => void;
 }
 
 export default function ShoppingCartDrawer({
   isOpen,
   onClose,
-  items,
-  onUpdateQuantity,
-  onRemove,
 }: ShoppingCartDrawerProps) {
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const { cartItems, updateCartItem, removeFromCart, getCartTotal } = useCart();
+  const { data: products = [] } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+  });
+
+  const cartItemsWithDetails = cartItems.map((item) => {
+    const product = products.find((p) => p.id === item.productId);
+    return {
+      id: item.productId,
+      productId: item.productId,
+      name: product?.name || "Unknown Product",
+      price: parseFloat(product?.price || "0"),
+      quantity: item.quantity,
+      image: product?.image || "",
+    };
+  });
+
+  const subtotal = getCartTotal();
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -42,7 +48,7 @@ export default function ShoppingCartDrawer({
           <SheetTitle>Shopping Cart</SheetTitle>
         </SheetHeader>
 
-        {items.length === 0 ? (
+        {cartItemsWithDetails.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
             <ShoppingBag className="h-16 w-16 text-muted-foreground" />
             <div>
@@ -59,7 +65,7 @@ export default function ShoppingCartDrawer({
           <>
             <ScrollArea className="flex-1 -mx-6 px-6">
               <div className="space-y-4">
-                {items.map((item) => (
+                {cartItemsWithDetails.map((item) => (
                   <div key={item.id} className="flex gap-4" data-testid={`cart-item-${item.id}`}>
                     <div className="h-20 w-20 overflow-hidden rounded-md bg-muted">
                       <img
@@ -75,7 +81,7 @@ export default function ShoppingCartDrawer({
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
-                          onClick={() => onRemove?.(item.id)}
+                          onClick={() => removeFromCart(item.id)}
                           data-testid={`button-remove-${item.id}`}
                         >
                           <X className="h-4 w-4" />
@@ -89,7 +95,7 @@ export default function ShoppingCartDrawer({
                           variant="outline"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => onUpdateQuantity?.(item.id, Math.max(1, item.quantity - 1))}
+                          onClick={() => updateCartItem(item.id, Math.max(1, item.quantity - 1))}
                           data-testid={`button-decrease-${item.id}`}
                         >
                           <Minus className="h-3 w-3" />
@@ -99,7 +105,7 @@ export default function ShoppingCartDrawer({
                           variant="outline"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => onUpdateQuantity?.(item.id, item.quantity + 1)}
+                          onClick={() => updateCartItem(item.id, item.quantity + 1)}
                           data-testid={`button-increase-${item.id}`}
                         >
                           <Plus className="h-3 w-3" />

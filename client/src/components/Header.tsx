@@ -22,28 +22,26 @@ export default function Header({ cartItemCount = 0, onCartClick }: HeaderProps) 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/">
-          <a className="flex items-center gap-2 font-display text-xl font-bold text-foreground hover-elevate rounded-md px-2 py-1" data-testid="link-home">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              3D
-            </div>
-            <span>Hobbyist</span>
-          </a>
+        <Link href="/" className="flex items-center gap-2 font-display text-xl font-bold text-foreground hover-elevate rounded-md px-2 py-1" data-testid="link-home">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            3D
+          </div>
+          <span>Hobbyist</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href}>
-              <a
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location === link.href
-                    ? "text-foreground"
-                    : "text-muted-foreground"
-                }`}
-                data-testid={`link-${link.label.toLowerCase().replace(" ", "-")}`}
-              >
-                {link.label}
-              </a>
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                location === link.href
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              }`}
+              data-testid={`link-${link.label.toLowerCase().replace(" ", "-")}`}
+            >
+              {link.label}
             </Link>
           ))}
         </nav>

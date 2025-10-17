@@ -1,4 +1,9 @@
 import { useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { insertCustomPrintRequestSchema } from "@shared/schema";
+import { z } from "zod";
 import { Upload, X, FileImage, Box } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface UploadedFile {
   name: string;
@@ -20,9 +27,55 @@ interface UploadedFile {
   preview?: string;
 }
 
+const formSchema = insertCustomPrintRequestSchema.extend({
+  quantity: z.coerce.number().int().positive("Quantity must be at least 1"),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
 export default function CustomPrintForm() {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
+  const { toast } = useToast();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    watch,
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      material: "PLA",
+      quantity: 1,
+      hasFile: "no",
+    },
+  });
+
+  const material = watch("material");
+
+  const submitRequestMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      return await apiRequest("/api/custom-print-requests", "POST", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Request submitted successfully!",
+        description: "We'll get back to you with a quote within 24 hours.",
+      });
+      reset();
+      setFiles([]);
+    },
+    onError: () => {
+      toast({
+        title: "Submission failed",
+        description: "There was an error submitting your request. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -73,28 +126,69 @@ export default function CustomPrintForm() {
       return uploadedFile;
     });
 
-    setFiles((prev) => [...prev, ...newFiles]);
+    setFiles((prev) => {
+      const updated = [...prev, ...newFiles];
+      setValue("hasFile", updated.length > 0 ? "yes" : "no");
+      return updated;
+    });
   };
 
   const removeFile = (fileName: string) => {
-    setFiles((prev) => prev.filter((file) => file.name !== fileName));
+    setFiles((prev) => {
+      const updated = prev.filter((file) => file.name !== fileName);
+      setValue("hasFile", updated.length > 0 ? "yes" : "no");
+      return updated;
+    });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Quote request submitted", { files });
+  const onSubmit = async (data: FormData) => {
+    await submitRequestMutation.mutateAsync(data);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <Label htmlFor="project-name">Project Name</Label>
+        <Label htmlFor="name">Your Name</Label>
         <Input
-          id="project-name"
-          placeholder="Enter your project name"
+          id="name"
+          placeholder="Enter your name"
           className="mt-2"
-          data-testid="input-project-name"
+          {...register("name")}
+          data-testid="input-name"
         />
+        {errors.name && (
+          <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="your@email.com"
+          className="mt-2"
+          {...register("email")}
+          data-testid="input-email"
+        />
+        {errors.email && (
+          <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="phone">Phone</Label>
+        <Input
+          id="phone"
+          type="tel"
+          placeholder="+91 98765 43210"
+          className="mt-2"
+          {...register("phone")}
+          data-testid="input-phone"
+        />
+        {errors.phone && (
+          <p className="text-sm text-destructive mt-1">{errors.phone.message}</p>
+        )}
       </div>
 
       <div>
@@ -179,15 +273,18 @@ export default function CustomPrintForm() {
         )}
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-6 sm:grid-cols-3">
         <div>
           <Label htmlFor="material">Material</Label>
-          <Select defaultValue="pla">
+          <Select value={material} onValueChange={(value) => setValue("material", value)}>
             <SelectTrigger id="material" className="mt-2" data-testid="select-material">
               <SelectValue placeholder="Select material" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="pla">PLA</SelectItem>
+              <SelectItem value="PLA">PLA</SelectItem>
+              <SelectItem value="ABS">ABS</SelectItem>
+              <SelectItem value="PETG">PETG</SelectItem>
+              <SelectItem value="Resin">Resin</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -198,25 +295,66 @@ export default function CustomPrintForm() {
             id="quantity"
             type="number"
             min="1"
-            defaultValue="1"
             className="mt-2"
+            {...register("quantity")}
             data-testid="input-quantity"
           />
+          {errors.quantity && (
+            <p className="text-sm text-destructive mt-1">{errors.quantity.message}</p>
+          )}
+        </div>
+
+        <div>
+          <Label htmlFor="size">Size</Label>
+          <Input
+            id="size"
+            placeholder="e.g., 10x10x10 cm"
+            className="mt-2"
+            {...register("size")}
+            data-testid="input-size"
+          />
+          {errors.size && (
+            <p className="text-sm text-destructive mt-1">{errors.size.message}</p>
+          )}
         </div>
       </div>
 
       <div>
-        <Label htmlFor="description">Project Description</Label>
-        <Textarea
-          id="description"
-          placeholder="Describe your project requirements, dimensions, color preferences, etc."
-          className="mt-2 min-h-32"
-          data-testid="textarea-description"
+        <Label htmlFor="color">Color Preference</Label>
+        <Input
+          id="color"
+          placeholder="e.g., Black, White, Red"
+          className="mt-2"
+          {...register("color")}
+          data-testid="input-color"
         />
+        {errors.color && (
+          <p className="text-sm text-destructive mt-1">{errors.color.message}</p>
+        )}
       </div>
 
-      <Button type="submit" size="lg" className="w-full" data-testid="button-submit-quote">
-        Request Quote
+      <div>
+        <Label htmlFor="projectDescription">Project Description</Label>
+        <Textarea
+          id="projectDescription"
+          placeholder="Describe your project requirements, dimensions, color preferences, etc."
+          className="mt-2 min-h-32"
+          {...register("projectDescription")}
+          data-testid="textarea-description"
+        />
+        {errors.projectDescription && (
+          <p className="text-sm text-destructive mt-1">{errors.projectDescription.message}</p>
+        )}
+      </div>
+
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full"
+        disabled={submitRequestMutation.isPending}
+        data-testid="button-submit-quote"
+      >
+        {submitRequestMutation.isPending ? "Submitting..." : "Request Quote"}
       </Button>
     </form>
   );
