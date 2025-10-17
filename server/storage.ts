@@ -24,7 +24,9 @@ export interface IStorage {
   getProduct(id: string): Promise<Product | undefined>;
   getProductsByCategory(category: string): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
   updateProductStock(id: string, stock: number): Promise<Product | undefined>;
+  deleteProduct(id: string): Promise<boolean>;
 
   // Cart methods (using cartId as session identifier)
   getCart(cartId: string): Promise<CartItem[]>;
@@ -178,6 +180,23 @@ export class MemStorage implements IStorage {
     const updatedProduct = { ...product, stock };
     this.products.set(id, updatedProduct);
     return updatedProduct;
+  }
+
+  async updateProduct(id: string, productData: Partial<InsertProduct>): Promise<Product | undefined> {
+    const product = this.products.get(id);
+    if (!product) return undefined;
+    
+    const updatedProduct = { 
+      ...product, 
+      ...productData,
+      id,
+    };
+    this.products.set(id, updatedProduct);
+    return updatedProduct;
+  }
+
+  async deleteProduct(id: string): Promise<boolean> {
+    return this.products.delete(id);
   }
 
   // Cart methods

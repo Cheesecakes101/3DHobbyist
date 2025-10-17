@@ -17,6 +17,7 @@ export default function Header({ cartItemCount = 0, onCartClick }: HeaderProps) 
     { href: "/store", label: "Store" },
     { href: "/custom-print", label: "Custom Print" },
     { href: "/about", label: "About" },
+    { href: "/admin", label: "Admin" },
   ];
 
   return (
