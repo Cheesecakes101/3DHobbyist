@@ -1,8 +1,10 @@
+import multer from "multer";
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { 
-  insertOrderSchema, 
+import { uploadToS3 } from "./s3";
+import {
+  insertOrderSchema,
   insertOrderItemSchema,
   insertCustomPrintRequestSchema,
   insertProductSchema,
@@ -11,31 +13,25 @@ import {
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Product routes
+  // ---------- Product routes ----------
   app.get("/api/products", async (req, res) => {
     try {
-      const category = req.query.category as string | undefined;
-      
-      if (category) {
-        const products = await storage.getProductsByCategory(category);
-        return res.json(products);
-      }
-      
-      const products = await storage.getAllProducts();
-      res.json(products);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch products" });
+      const all = await storage.getAllProducts();
+      res.json(all);
+    } catch (err) {
+      console.error("❌ Error fetching products:", err);
+      res
+        .status(500)
+        .json({ message: "Failed to fetch products", error: String(err) });
     }
   });
 
   app.get("/api/products/:id", async (req, res) => {
     try {
       const product = await storage.getProduct(req.params.id);
-      
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
-      
       res.json(product);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch product" });
@@ -49,7 +45,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(product);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid product data", errors: error.errors });
+        return res
+          .status(400)
+          .json({ message: "Invalid product data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to create product" });
     }
@@ -59,15 +57,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertProductSchema.partial().parse(req.body);
       const product = await storage.updateProduct(req.params.id, validatedData);
-      
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
-      
       res.json(product);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid product data", errors: error.errors });
+        return res
+          .status(400)
+          .json({ message: "Invalid product data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to update product" });
     }
@@ -76,18 +74,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/products/:id", async (req, res) => {
     try {
       const deleted = await storage.deleteProduct(req.params.id);
-      
       if (!deleted) {
         return res.status(404).json({ message: "Product not found" });
       }
-      
       res.json({ message: "Product deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete product" });
     }
   });
 
-  // Cart routes
+  // ---------- Cart routes ----------
   app.get("/api/cart/:cartId", async (req, res) => {
     try {
       const cart = await storage.getCart(req.params.cartId);
@@ -104,7 +100,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(cart);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid cart item data", errors: error.errors });
+        return res
+          .status(400)
+          .json({ message: "Invalid cart item data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to add item to cart" });
     }
@@ -113,11 +111,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/cart/:cartId/:productId", async (req, res) => {
     try {
       const { quantity } = req.body;
-      
       if (typeof quantity !== "number" || quantity < 0) {
         return res.status(400).json({ message: "Invalid quantity" });
       }
-      
       const cart = await storage.updateCartItem(
         req.params.cartId,
         req.params.productId,
@@ -150,14 +146,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Order routes
+  // ---------- Order routes ----------
   app.post("/api/orders", async (req, res) => {
     try {
       const { order, items } = req.body;
-      
+
       const validatedOrder = insertOrderSchema.parse(order);
       const createdOrder = await storage.createOrder(validatedOrder);
-      
+
       if (items && Array.isArray(items)) {
         for (const item of items) {
           const validatedItem = insertOrderItemSchema.parse({
@@ -167,13 +163,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.createOrderItem(validatedItem);
         }
       }
-      
+
       const orderItems = await storage.getOrderItems(createdOrder.id);
-      
       res.status(201).json({ order: createdOrder, items: orderItems });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid order data", errors: error.errors });
+        return res
+          .status(400)
+          .json({ message: "Invalid order data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to create order" });
     }
@@ -182,11 +179,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/orders/:id", async (req, res) => {
     try {
       const order = await storage.getOrder(req.params.id);
-      
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
-      
       const items = await storage.getOrderItems(order.id);
       res.json({ order, items });
     } catch (error) {
@@ -194,19 +189,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Custom print request routes
-  app.post("/api/custom-print-requests", async (req, res) => {
-    try {
-      const validatedData = insertCustomPrintRequestSchema.parse(req.body);
-      const request = await storage.createCustomPrintRequest(validatedData);
-      res.status(201).json(request);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+  // ---------- Custom print request routes (with AWS S3 upload) ----------
+  const upload = multer({ storage: multer.memoryStorage() });
+
+  app.post(
+    "/api/custom-print-requests",
+    upload.single("file"),
+    async (req, res) => {
+      try {
+        console.log("🧾 Incoming custom print request:", req.body);
+
+        let fileUrl: string | null = null;
+        let fileName: string | null = null;
+
+        if (req.file) {
+          console.log("📤 Uploading file to S3:", req.file.originalname);
+          fileUrl = await uploadToS3(
+            req.file.buffer,
+            req.file.originalname,
+            req.file.mimetype
+          );
+          fileName = req.file.originalname;
+        }
+
+        // Merge file data into request body
+        const payload = {
+          ...req.body,
+          hasFile: req.file ? "yes" : "no",
+          fileUrl,
+          fileName,
+          // Ensure numeric where expected
+          quantity:
+            typeof req.body.quantity === "string"
+              ? Number(req.body.quantity)
+              : req.body.quantity,
+        };
+
+        // Validate shape (tolerant to extra optional fields)
+        const parsed = insertCustomPrintRequestSchema
+          .partial()
+          .safeParse(payload);
+        if (!parsed.success) {
+          return res.status(400).json({
+            message: "Invalid custom print request data",
+            errors: parsed.error.errors,
+          });
+        }
+
+        console.log("🧾 Creating custom print in DB:", payload);
+        const request = await storage.createCustomPrintRequest(
+          payload as any // storage layer uses its own Insert type
+        );
+
+        res.status(201).json(request);
+      } catch (err) {
+        console.error("❌ Error creating custom print request:", err);
+        res.status(500).json({
+          message: "Failed to create custom print request",
+          error: String(err),
+        });
       }
-      res.status(500).json({ message: "Failed to create custom print request" });
     }
-  });
+  );
 
   app.get("/api/custom-print-requests", async (req, res) => {
     try {
@@ -220,18 +264,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/custom-print-requests/:id", async (req, res) => {
     try {
       const request = await storage.getCustomPrintRequest(req.params.id);
-      
       if (!request) {
-        return res.status(404).json({ message: "Custom print request not found" });
+        return res
+          .status(404)
+          .json({ message: "Custom print request not found" });
       }
-      
       res.json(request);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch custom print request" });
     }
   });
 
+  // ---------- HTTP server ----------
   const httpServer = createServer(app);
-
   return httpServer;
 }
