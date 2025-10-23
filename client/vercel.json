@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm install && npm rebuild rollup && npm run build",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "rootDirectory": "client",
+  "outputDirectory": "dist/public",
+  "env": {
+    "NODE_VERSION":"20"
+  }
+}
