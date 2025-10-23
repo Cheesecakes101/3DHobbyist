@@ -1,3 +1,5 @@
+import ToasterCheck from "@/components/ui/toaster";
+console.log("✅ Toaster imported successfully", ToasterCheck);
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
