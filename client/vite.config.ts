@@ -14,5 +14,11 @@ export default defineConfig({
   build: {
     outDir: "../dist/public",
     emptyOutDir: true,
+    commonjsOptions: {
+      include: [/node_modules/, /shared/],
+    },
+  },
+  optimizeDeps: {
+    include: ["drizzle-orm", "drizzle-zod"],
   },
 });
