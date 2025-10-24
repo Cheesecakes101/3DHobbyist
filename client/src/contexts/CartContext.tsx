@@ -75,15 +75,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   });
 
   const addToCart = async (productId: string, quantity: number) => {
-    await addToCartMutation.mutateAsync({ productId, quantity });
+    await addToCartMutation.mutateAsync({ productId: String(productId), quantity });
   };
 
   const updateCartItem = async (productId: string, quantity: number) => {
-    await updateCartItemMutation.mutateAsync({ productId, quantity });
+    await updateCartItemMutation.mutateAsync({ productId: String(productId), quantity });
   };
 
   const removeFromCart = async (productId: string) => {
-    await removeFromCartMutation.mutateAsync(productId);
+    await removeFromCartMutation.mutateAsync(String(productId));
   };
 
   const clearCart = async () => {
