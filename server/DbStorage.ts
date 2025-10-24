@@ -1,11 +1,15 @@
 import { db } from "./db.js";
-import { products, customPrintRequests } from "@shared/schema";
+import { products, customPrintRequests, orders, orderItems } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import {
   type Product,
   type InsertProduct,
   type CustomPrintRequest,
   type InsertCustomPrintRequest,
+  type Order,
+  type InsertOrder,
+  type OrderItem,
+  type InsertOrderItem,
 } from "@shared/schema";
 
 export class DbStorage {
@@ -66,4 +70,63 @@ export class DbStorage {
   async getAllCustomPrintRequests(): Promise<CustomPrintRequest[]> {
     return await db.select().from(customPrintRequests);
   }
+
+  async getCustomPrintRequest(id: string): Promise<CustomPrintRequest | undefined> {
+    const rows = await db.select().from(customPrintRequests).where(eq(customPrintRequests.id, id));
+    return rows[0];
+  }
+
+  async updateCustomPrintRequestStatus(id: string, status: string): Promise<CustomPrintRequest | undefined> {
+    const [updated] = await db
+      .update(customPrintRequests)
+      .set({ status })
+      .where(eq(customPrintRequests.id, id))
+      .returning();
+    return updated;
+  }
+
+  // ✅ ORDERS
+  async createOrder(data: InsertOrder): Promise<Order> {
+    const [newOrder] = await db.insert(orders).values(data).returning();
+    return newOrder;
+  }
+
+  async createOrderItem(data: InsertOrderItem): Promise<OrderItem> {
+    const [newItem] = await db.insert(orderItems).values(data).returning();
+    return newItem;
+  }
+
+  async getOrder(id: string): Promise<Order | undefined> {
+    const rows = await db.select().from(orders).where(eq(orders.id, id));
+    return rows[0];
+  }
+
+  async getAllOrders(): Promise<Order[]> {
+    return await db.select().from(orders);
+  }
+
+  async getOrderItems(orderId: string): Promise<OrderItem[]> {
+    return await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+  }
+
+  async updateOrderStatus(id: string, status: string): Promise<Order | undefined> {
+    const [updated] = await db
+      .update(orders)
+      .set({ status })
+      .where(eq(orders.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Stub methods for cart (not implemented in DB yet - using in-memory)
+  async getCart() { return []; }
+  async addToCart() { return []; }
+  async updateCartItem() { return []; }
+  async removeFromCart() { return []; }
+  async clearCart() { }
+  async getUser() { return undefined; }
+  async getUserByUsername() { return undefined; }
+  async createUser() { throw new Error("Not implemented"); }
+  async getProductsByCategory() { return []; }
+  async updateProductStock() { return undefined; }
 }

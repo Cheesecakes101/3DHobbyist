@@ -39,12 +39,15 @@ export interface IStorage {
   createOrder(order: InsertOrder): Promise<Order>;
   createOrderItem(orderItem: InsertOrderItem): Promise<OrderItem>;
   getOrder(id: string): Promise<Order | undefined>;
+  getAllOrders(): Promise<Order[]>;
   getOrderItems(orderId: string): Promise<OrderItem[]>;
+  updateOrderStatus(id: string, status: string): Promise<Order | undefined>;
 
   // Custom print request methods
   createCustomPrintRequest(request: InsertCustomPrintRequest): Promise<CustomPrintRequest>;
   getAllCustomPrintRequests(): Promise<CustomPrintRequest[]>;
   getCustomPrintRequest(id: string): Promise<CustomPrintRequest | undefined>;
+  updateCustomPrintRequestStatus(id: string, status: string): Promise<CustomPrintRequest | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -271,10 +274,22 @@ export class MemStorage implements IStorage {
     return this.orders.get(id);
   }
 
+  async getAllOrders(): Promise<Order[]> {
+    return Array.from(this.orders.values());
+  }
+
   async getOrderItems(orderId: string): Promise<OrderItem[]> {
     return Array.from(this.orderItems.values()).filter(
       (item) => item.orderId === orderId,
     );
+  }
+
+  async updateOrderStatus(id: string, status: string): Promise<Order | undefined> {
+    const order = this.orders.get(id);
+    if (!order) return undefined;
+    const updatedOrder = { ...order, status };
+    this.orders.set(id, updatedOrder);
+    return updatedOrder;
   }
 
   // Custom print request methods
@@ -296,6 +311,14 @@ export class MemStorage implements IStorage {
 
   async getCustomPrintRequest(id: string): Promise<CustomPrintRequest | undefined> {
     return this.customPrintRequests.get(id);
+  }
+
+  async updateCustomPrintRequestStatus(id: string, status: string): Promise<CustomPrintRequest | undefined> {
+    const request = this.customPrintRequests.get(id);
+    if (!request) return undefined;
+    const updatedRequest = { ...request, status };
+    this.customPrintRequests.set(id, updatedRequest);
+    return updatedRequest;
   }
 }
 
