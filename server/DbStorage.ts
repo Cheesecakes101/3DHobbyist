@@ -19,7 +19,7 @@ export class DbStorage {
   }
 
   async getProduct(id: string): Promise<Product | undefined> {
-    const rows = await db.select().from(products).where(eq(products.id, Number(id)));
+    const rows = await db.select().from(products).where(eq(products.id, id));
     return rows[0];
   }
 
@@ -32,13 +32,13 @@ export class DbStorage {
     const [updated] = await db
       .update(products)
       .set(data)
-      .where(eq(products.id, Number(id)))
+      .where(eq(products.id, id))
       .returning();
     return updated;
   }
 
   async deleteProduct(id: string): Promise<boolean> {
-    const deleted = await db.delete(products).where(eq(products.id, Number(id))).returning();
+    const deleted = await db.delete(products).where(eq(products.id, id)).returning();
     return deleted.length > 0;
   }
 

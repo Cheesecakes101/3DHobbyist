@@ -14,7 +14,10 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/attached_assets", express.static(path.resolve(import.meta.dirname, "..", "attached_assets")));
+app.use(
+  "/attached_assets",
+  express.static(path.resolve(__dirname, "..", "attached_assets")),
+);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -58,7 +61,7 @@ app.use((req, res, next) => {
   });
 
   // Serve static files in production
-  const distPath = path.resolve(import.meta.dirname, "public");
+  const distPath = path.resolve(__dirname, "public");
   
   if (!fs.existsSync(distPath)) {
     console.warn(`⚠️  Build directory not found: ${distPath}`);

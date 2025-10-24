@@ -5,21 +5,18 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-// 🔍 Debug check (you can remove after confirming)
-
 import express from "express";
 import { registerRoutes } from "./routes.js";
 import { setupVite, serveStatic, log } from "./vite.js";
-
-// ...rest of your server code here
-
-import path from "path";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/attached_assets", express.static(path.resolve(import.meta.dirname, "..", "attached_assets")));
+app.use(
+  "/attached_assets",
+  express.static(path.resolve(__dirname, "..", "attached_assets")),
+);
 
 app.use((req, res, next) => {
   const start = Date.now();
