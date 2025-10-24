@@ -38,7 +38,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("orders");
   const { toast } = useToast();
 
-  // Fetch orders
+  // Fetch orders (may fail if table doesn't exist yet)
   const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
     retry: false,
@@ -77,9 +77,16 @@ export default function AdminDashboard() {
               <ul className="text-left max-w-md mx-auto space-y-2 text-sm text-muted-foreground">
                 <li>• Backend is running at: https://threedhobbyist-backend.onrender.com</li>
                 <li>• API endpoints are accessible</li>
-                <li>• CORS is configured correctly</li>
+                <li>• Database tables exist (run `npm run db:push` if needed)</li>
               </ul>
-              {ordersError && <p className="text-xs text-destructive mt-4">Orders: {String(ordersError)}</p>}
+              {ordersError && (
+                <div className="text-xs text-destructive mt-4 max-w-md mx-auto text-left">
+                  <strong>Orders Error:</strong> {String(ordersError)}
+                  <p className="mt-2 text-muted-foreground">
+                    If the orders table doesn't exist, run: <code className="bg-muted px-1">npm run db:push</code>
+                  </p>
+                </div>
+              )}
               {requestsError && <p className="text-xs text-destructive mt-2">Requests: {String(requestsError)}</p>}
             </div>
           </div>
