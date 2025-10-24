@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/card";
 import { Package, FileText, ShoppingBag, CheckCircle, Clock, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useCart } from "@/contexts/CartContext";
+// import { useCart } from "@/contexts/CartContext"; // Not needed for admin
 import { format } from "date-fns";
 
 export default function AdminDashboard() {
@@ -37,8 +37,6 @@ export default function AdminDashboard() {
   };
   const [activeTab, setActiveTab] = useState("orders");
   const { toast } = useToast();
-  const cart = useCart();
-  const cartCount = cart?.getCartItemCount?.() || 0;
 
   // Fetch orders
   const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<Order[]>({
@@ -126,7 +124,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header cartItemCount={cartCount} onCartClick={() => {}} />
+      <Header cartItemCount={0} onCartClick={() => {}} />
 
       <main className="flex-1 py-12 bg-muted/30">
         <div className="container mx-auto px-4">
