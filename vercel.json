@@ -1,8 +1,4 @@
 {
-  "buildCommand": "cd client && npm install && npm run build",
-  "installCommand": "npm install --prefix client",
-  "framework": null,
-  "outputDirectory": "dist/public",
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -11,6 +7,10 @@
     {
       "source": "/attached_assets/:path*",
       "destination": "https://threedhobbyist-backend.onrender.com/attached_assets/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
