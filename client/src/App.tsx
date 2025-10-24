@@ -15,6 +15,7 @@ import CustomPrintPage from "@/pages/CustomPrintPage";
 import CheckoutPage from "@/pages/CheckoutPage";
 import AboutPage from "@/pages/AboutPage";
 import AdminPage from "@/pages/AdminPage";
+import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,7 +26,8 @@ function Router() {
       <Route path="/custom-print" component={CustomPrintPage} />
       <Route path="/checkout" component={CheckoutPage} />
       <Route path="/about" component={AboutPage} />
-      <Route path="/admin" component={AdminPage} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/products" component={AdminPage} />
       <Route component={NotFound} />
     </Switch>
   );
