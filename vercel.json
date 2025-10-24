@@ -7,16 +7,10 @@
     {
       "source": "/attached_assets/:path*",
       "destination": "https://threedhobbyist-backend.onrender.com/attached_assets/:path*"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
