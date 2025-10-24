@@ -27,6 +27,5 @@
       "src": "/(.*)",
       "dest": "/dist/public/$1"
     }
-  ],
-  "outputDirectory": "dist"
+  ]
 }
