@@ -61,6 +61,34 @@ export default function AdminDashboard() {
   if (requestsError) console.error("Requests error:", requestsError);
   if (productsError) console.error("Products error:", productsError);
 
+  // Show error message if queries fail
+  const hasErrors = ordersError || requestsError || productsError;
+  if (hasErrors) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header cartItemCount={0} onCartClick={() => {}} />
+        <main className="flex-1 py-12">
+          <div className="container mx-auto px-4">
+            <div className="text-center py-12">
+              <h2 className="text-2xl font-bold text-destructive mb-4">Error Loading Dashboard</h2>
+              <p className="text-muted-foreground mb-4">
+                Unable to connect to the backend API. Please check:
+              </p>
+              <ul className="text-left max-w-md mx-auto space-y-2 text-sm text-muted-foreground">
+                <li>• Backend is running at: https://threedhobbyist-backend.onrender.com</li>
+                <li>• API endpoints are accessible</li>
+                <li>• CORS is configured correctly</li>
+              </ul>
+              {ordersError && <p className="text-xs text-destructive mt-4">Orders: {String(ordersError)}</p>}
+              {requestsError && <p className="text-xs text-destructive mt-2">Requests: {String(requestsError)}</p>}
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   // Update order status
   const updateOrderStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
@@ -201,7 +229,7 @@ export default function AdminDashboard() {
                         {orders.map((order) => (
                           <TableRow key={order.id}>
                             <TableCell className="font-mono text-xs">
-                              {order.id.slice(0, 8)}...
+                              {String(order.id).slice(0, 8)}...
                             </TableCell>
                             <TableCell className="font-medium">
                               {order.customerName}
@@ -293,7 +321,7 @@ export default function AdminDashboard() {
                         {customPrintRequests.map((request) => (
                           <TableRow key={request.id}>
                             <TableCell className="font-mono text-xs">
-                              {request.id.slice(0, 8)}...
+                              {String(request.id).slice(0, 8)}...
                             </TableCell>
                             <TableCell className="font-medium">
                               {request.name}
