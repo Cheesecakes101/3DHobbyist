@@ -37,7 +37,8 @@ export default function AdminDashboard() {
   };
   const [activeTab, setActiveTab] = useState("orders");
   const { toast } = useToast();
-  const { getCartItemCount } = useCart();
+  const cart = useCart();
+  const cartCount = cart?.getCartItemCount?.() || 0;
 
   // Fetch orders
   const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<Order[]>({
@@ -57,30 +58,10 @@ export default function AdminDashboard() {
     retry: false,
   });
 
-  // Show error if any query fails
-  if (ordersError || requestsError || productsError) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header cartItemCount={getCartItemCount()} onCartClick={() => {}} />
-        <main className="flex-1 py-12">
-          <div className="container mx-auto px-4">
-            <div className="text-center py-12">
-              <h2 className="text-2xl font-bold text-destructive mb-4">Error Loading Dashboard</h2>
-              <p className="text-muted-foreground">
-                {ordersError ? "Failed to load orders. " : ""}
-                {requestsError ? "Failed to load custom print requests. " : ""}
-                {productsError ? "Failed to load products. " : ""}
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Please check your backend connection.
-              </p>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  // Log errors for debugging
+  if (ordersError) console.error("Orders error:", ordersError);
+  if (requestsError) console.error("Requests error:", requestsError);
+  if (productsError) console.error("Products error:", productsError);
 
   // Update order status
   const updateOrderStatus = useMutation({
@@ -145,7 +126,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header cartItemCount={getCartItemCount()} onCartClick={() => {}} />
+      <Header cartItemCount={cartCount} onCartClick={() => {}} />
 
       <main className="flex-1 py-12 bg-muted/30">
         <div className="container mx-auto px-4">
