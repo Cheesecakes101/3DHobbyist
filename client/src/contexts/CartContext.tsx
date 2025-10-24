@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { CartItem, Product } from "@shared/types";
@@ -18,6 +19,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { toast } = useToast();
   const [cartId, setCartId] = useState<string>(() => {
     const stored = localStorage.getItem("cartId");
     if (stored) return stored;
@@ -45,6 +47,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cart", cartId] });
     },
+    onError: (err: any) => {
+      console.error("Add to cart failed:", err);
+      toast({ title: "Could not add to cart", description: String(err), variant: "destructive" as any });
+    },
   });
 
   const updateCartItemMutation = useMutation({
@@ -53,6 +59,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cart", cartId] });
+    },
+    onError: (err: any) => {
+      console.error("Update cart item failed:", err);
+      toast({ title: "Could not update cart", description: String(err), variant: "destructive" as any });
     },
   });
 
@@ -63,6 +73,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cart", cartId] });
     },
+    onError: (err: any) => {
+      console.error("Remove from cart failed:", err);
+      toast({ title: "Could not remove item", description: String(err), variant: "destructive" as any });
+    },
   });
 
   const clearCartMutation = useMutation({
@@ -71,6 +85,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cart", cartId] });
+    },
+    onError: (err: any) => {
+      console.error("Clear cart failed:", err);
+      toast({ title: "Could not clear cart", description: String(err), variant: "destructive" as any });
     },
   });
 
