@@ -71,11 +71,15 @@ export async function setupVite(app: Express, server: Server) {
 
 export function serveStatic(app: Express) {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const distPath = path.resolve(__dirname, "public");
+  // Prefer root-level dist/public when running from TS (server directory)
+  const candidateA = path.resolve(__dirname, "..", "dist", "public");
+  // Fallback to sibling public when running from compiled dist (production build)
+  const candidateB = path.resolve(__dirname, "public");
+  const distPath = fs.existsSync(candidateA) ? candidateA : candidateB;
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+      `Could not find the build directory. Checked: ${candidateA} and ${candidateB}. Run \"npm run build\" first.`,
     );
   }
 

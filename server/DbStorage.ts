@@ -1,5 +1,5 @@
 import { db } from "./db.js";
-import { products, customPrintRequests, orders, orderItems } from "@shared/schema";
+import { products, customPrintRequests, orders, orderItems, type CartItem } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import {
   type Product,
@@ -13,6 +13,7 @@ import {
 } from "@shared/schema";
 
 export class DbStorage {
+  private carts: Map<string, CartItem[]> = new Map();
   // ✅ PRODUCTS
   async getAllProducts(): Promise<Product[]> {
     return await db.select().from(products);
@@ -119,11 +120,43 @@ export class DbStorage {
   }
 
   // Stub methods for cart (not implemented in DB yet - using in-memory)
-  async getCart() { return []; }
-  async addToCart() { return []; }
-  async updateCartItem() { return []; }
-  async removeFromCart() { return []; }
-  async clearCart() { }
+  async getCart(cartId: string): Promise<CartItem[]> {
+    return this.carts.get(cartId) || [];
+  }
+
+  async addToCart(cartId: string, item: CartItem): Promise<CartItem[]> {
+    const cart = this.carts.get(cartId) || [];
+    const idx = cart.findIndex((c) => c.productId === item.productId);
+    if (idx >= 0) {
+      cart[idx].quantity += item.quantity;
+    } else {
+      cart.push({ productId: String(item.productId), quantity: item.quantity } as CartItem);
+    }
+    this.carts.set(cartId, cart);
+    return cart;
+  }
+
+  async updateCartItem(cartId: string, productId: string, quantity: number): Promise<CartItem[]> {
+    const cart = this.carts.get(cartId) || [];
+    const idx = cart.findIndex((c) => c.productId === productId);
+    if (idx >= 0) {
+      if (quantity <= 0) cart.splice(idx, 1);
+      else cart[idx].quantity = quantity;
+    }
+    this.carts.set(cartId, cart);
+    return cart;
+  }
+
+  async removeFromCart(cartId: string, productId: string): Promise<CartItem[]> {
+    const cart = this.carts.get(cartId) || [];
+    const next = cart.filter((c) => c.productId !== productId);
+    this.carts.set(cartId, next);
+    return next;
+  }
+
+  async clearCart(cartId: string): Promise<void> {
+    this.carts.delete(cartId);
+  }
   async getUser() { return undefined; }
   async getUserByUsername() { return undefined; }
   async createUser() { throw new Error("Not implemented"); }
