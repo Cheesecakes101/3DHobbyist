@@ -28,24 +28,59 @@ import { useCart } from "@/contexts/CartContext";
 import { format } from "date-fns";
 
 export default function AdminDashboard() {
+  const formatDate = (date: Date | string) => {
+    try {
+      return format(new Date(date), "MMM dd, yyyy");
+    } catch (error) {
+      return "Invalid date";
+    }
+  };
   const [activeTab, setActiveTab] = useState("orders");
   const { toast } = useToast();
   const { getCartItemCount } = useCart();
 
   // Fetch orders
-  const { data: orders = [], isLoading: ordersLoading } = useQuery<Order[]>({
+  const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
+    retry: false,
   });
 
   // Fetch custom print requests
-  const { data: customPrintRequests = [], isLoading: requestsLoading } = useQuery<CustomPrintRequest[]>({
+  const { data: customPrintRequests = [], isLoading: requestsLoading, error: requestsError } = useQuery<CustomPrintRequest[]>({
     queryKey: ["/api/custom-print-requests"],
+    retry: false,
   });
 
   // Fetch products for stats
-  const { data: products = [] } = useQuery<Product[]>({
+  const { data: products = [], error: productsError } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    retry: false,
   });
+
+  // Show error if any query fails
+  if (ordersError || requestsError || productsError) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header cartItemCount={getCartItemCount()} onCartClick={() => {}} />
+        <main className="flex-1 py-12">
+          <div className="container mx-auto px-4">
+            <div className="text-center py-12">
+              <h2 className="text-2xl font-bold text-destructive mb-4">Error Loading Dashboard</h2>
+              <p className="text-muted-foreground">
+                {ordersError ? "Failed to load orders. " : ""}
+                {requestsError ? "Failed to load custom print requests. " : ""}
+                {productsError ? "Failed to load products. " : ""}
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Please check your backend connection.
+              </p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   // Update order status
   const updateOrderStatus = useMutation({
@@ -197,7 +232,7 @@ export default function AdminDashboard() {
                             <TableCell>₹{parseFloat(order.total).toFixed(2)}</TableCell>
                             <TableCell>{getStatusBadge(order.status)}</TableCell>
                             <TableCell>
-                              {format(new Date(order.createdAt), "MMM dd, yyyy")}
+                              {formatDate(order.createdAt)}
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-2">
@@ -307,7 +342,7 @@ export default function AdminDashboard() {
                             </TableCell>
                             <TableCell>{getStatusBadge(request.status)}</TableCell>
                             <TableCell>
-                              {format(new Date(request.createdAt), "MMM dd, yyyy")}
+                              {formatDate(request.createdAt)}
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-2">
