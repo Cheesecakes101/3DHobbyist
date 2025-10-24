@@ -7,8 +7,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 import express from "express";
+import fs from "fs";
 import { registerRoutes } from "./routes.js";
-import { serveStatic } from "./vite.js";
 
 const app = express();
 app.use(express.json());
@@ -58,7 +58,18 @@ app.use((req, res, next) => {
   });
 
   // Serve static files in production
-  serveStatic(app);
+  const distPath = path.resolve(import.meta.dirname, "public");
+  
+  if (!fs.existsSync(distPath)) {
+    console.warn(`⚠️  Build directory not found: ${distPath}`);
+  } else {
+    app.use(express.static(distPath));
+    
+    // Fall through to index.html for SPA routing
+    app.use("*", (_req, res) => {
+      res.sendFile(path.resolve(distPath, "index.html"));
+    });
+  }
 
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen({
