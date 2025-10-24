@@ -9,10 +9,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
       "@shared": path.resolve(__dirname, "../shared"),
       "@assets": path.resolve(__dirname, "../attached_assets"),
+      "zod": path.resolve(__dirname, "./node_modules/zod"),
     },
   },
   build: {
     outDir: "../dist/public",
     emptyOutDir: true,
+  },
+  optimizeDeps: {
+    include: ["zod"],
   },
 });
