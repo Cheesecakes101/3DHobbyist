@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import type { Product } from "@shared/schema";
+import type { Product } from "@shared/types";
 
 export default function StorePage() {
   const [isCartOpen, setIsCartOpen] = useState(false);

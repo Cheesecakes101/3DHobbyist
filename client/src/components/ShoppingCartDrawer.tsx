@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "wouter";
 import { useCart } from "@/contexts/CartContext";
 import { useQuery } from "@tanstack/react-query";
-import type { Product } from "@shared/schema";
+import type { Product } from "@shared/types";
 
 interface ShoppingCartDrawerProps {
   isOpen: boolean;

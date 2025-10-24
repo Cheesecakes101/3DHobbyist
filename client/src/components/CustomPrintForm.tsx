@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertCustomPrintRequestSchema } from "@shared/schema";
+import { insertCustomPrintRequestSchema } from "@shared/types";
 import { z } from "zod";
 import { Upload, X, FileImage, Box } from "lucide-react";
 import { Button } from "@/components/ui/button";

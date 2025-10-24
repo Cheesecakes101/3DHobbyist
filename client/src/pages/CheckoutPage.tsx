@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Lock } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { apiRequest } from "@/lib/queryClient";
-import type { Product } from "@shared/schema";
+import type { Product } from "@shared/types";
 import { useToast } from "@/hooks/use-toast";
 
 const checkoutSchema = z.object({

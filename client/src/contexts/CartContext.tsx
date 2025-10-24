@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import type { CartItem, Product } from "@shared/schema";
+import type { CartItem, Product } from "@shared/types";
 
 interface CartContextType {
   cartId: string;
